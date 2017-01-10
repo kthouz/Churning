@@ -1,7 +1,9 @@
 
 # Churn Prediction - QWE INC
 
-This notebook is about building a model to predict churners at QWE INC.
+QWE is a telecom company suffering from the churning of their members. So far, the churning rate is about 5% and the company is interested in building a model to predict potential churners. 
+
+This notebook contains the analysis of data leading to the predictive model. The work consists in data cleaning, deriving new features, exploratory data analysis and hypothesis testing, building of the predictive model and recommendations. The data provided was structured and missing data were previously imputed with 0.
 
 ### Contents
 
@@ -713,6 +715,10 @@ labels_pca = map(lambda x:x[0],vects)
 
 
 # 6. Modeling
+
+This is a classification problem with positive cases being churners. Throught data exploration, we found variables such as longevity and happiness index that can be used to separate churners from non-churners. In this section, we will choose the registic regression as base model and we will tune the regularization factor to build our own predictive model
+
+
 ## 6.1. Training the model
 
 After observing so many variables whose averages are significantly different in the two groups of churners and non-churners, logistic regression would serve as a good candidate for model training.
@@ -850,7 +856,21 @@ Loss due to false positive consists in the money invested in promotion per poten
 
 $FP_{Loss} = x_2$
 
-In order to decide which value to allocate on each potential churner, the company need to take into account the two potential losses above balanced with other revenues and expenses of operation.
+In order to decide which value to allocate on each potential churner, the company need to take into account the two potential losses above balanced with total loss of churners in case the model was absent.
+
+$64*(12.6*r_1 - x_1)+45*x_2 = 80*(12.6*r_1 - x_1)$
+
+And finally 
+
+$x_2 < (16/45)*(12.6*r_1 - x_1)$
+```python
+def x2(x1,r1):
+    return (12.6*r1 - x1)*16/float(45)
+
+print "for x1=100 and r1=20, the retaintion incentive can be estimated to ",round(x2(100,20))
+```
+for x1=100 and r1=20, the retaintion incentive can be estimated to  54.0
+
 
 ### Characteristics of churners:
 Based on our exploratory and statistical analysis we suggest the company prepare money for incentives to retain potential churners. As potential churners of interest, they should:
