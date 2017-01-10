@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<!DOCTYPE html>
+<html>
+<head>
+	<title>QWE Churn Project</title>
+	<meta charset="utf-8">
+  	<meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel=stylesheet type=text/css href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdn.rawgit.com/kthouz/nvd3/v1.8.1/build/nv.d3.css">
+    
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+	
+
+  	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+  	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-csv/0.71/jquery.csv-0.71.min.js"></script>
+  	
+  	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  	<script src="https://cdn.rawgit.com/eligrey/canvas-toBlob.js/f1a01896135ab378aa5c0118eadd81da55e698d8/canvas-toBlob.js"></script>
+  	<script src="https://cdn.rawgit.com/eligrey/FileSaver.js/e9d941381475b5df8b7d7691013401e171014e89/FileSaver.min.js"></script>
+  	<script type="text/javascript" src="https://d3js.org/d3.v3.min.js"></script>
+    <script type="text/javascript" src="https://cdn.rawgit.com/kthouz/nvd3/v1.8.1/build/nv.d3.min.js"></script>
+    <script type="text/javascript" src="https://raw.githubusercontent.com/kthouz/nvd3/master/examples/lib/stream_layers.js"></script>
+    <script src="https://cdn.jsdelivr.net/jspdf/1.2.61/jspdf.min.js"></script>
+    <script type="text/javascript" src="https://raw.githubusercontent.com/edeno/d3-save-svg/gh-pages/assets/d3-save-svg.min.js"></script>
+
+
+</head>
+<body>
+	<!--
+	<nav class="navbar navbar-default">
+	  
+	</nav>
+	-->
+  
+	<div class="container-fluid text-center">    
+	  <div class="row content">
+		    <div class="col-sm-2 nav navbar-btn sidenav text-right">
+		    	<ul class="nav navbar-btn">
+	      			<li class="active"><a href="#">Data Explorer</a></li>
+			        <li><a href="#">Predictor</a></li>
+			      	<li><a href="#">Recommendations</a></li>
+	    		</ul>
+		    	
+		    </div>
+
+	      	<div class="col-sm-10 text-left container-fluid">
+	      		<h4>Data Exploration</h4>
+	      		<hr>
+	      		<!--
+	      		<div class="container-fluid">
+	      			<label style="display: inline-block;">Choose dataset</label>
+	      			<input type='file' id="dataset" style="display: inline-block;"/>
+	      		</div>
+	      		-->
+
+				<div id="dvImportSegments" class="fileupload ">
+				    <fieldset>
+				        <input type="file" name="File Upload" id="txtFileUpload" accept=".csv" />
+				   </fieldset>
+				</div>
+		      	<div class="container-fluid control-panel">
+				    <div class="form-group col-sm-3">
+						<div>
+							<!--
+            				<label class="btn btn-default btn-block">
+				                Browse dataset&hellip; 
+				                <input type="file" style="display: none;">
+				            </label>
+				            -->
+				            
+				        </div>
+				    	<label>Chart Type *</label>
+						<select class="form-control" id="charttype">
+							<option value="Default">Pick Chart Type</option>
+							<option value="ScatterPlot">Scatter Plot</option>
+							<option value="BarPlot">Bar Plot</option>
+							<option value="BoxPlot">Box Plot</option>
+						</select>
+						<label>X Axis *</label>
+						<select class="form-control" id="myx">
+							<option value="Default">Variable on X-Axis</option>
+						</select>
+						<label>Y Axis *</label>
+						<select class="form-control" id="myy">
+							<option value="Default">Variable on Y-Axis</option>
+						</select>
+						<label>Color By</label>
+						<select class="form-control" id="myc">
+							<option value="Default">Variable to Color by</option>
+						</select>
+						<label>Size By</label>
+						<select disabled class="form-control" id="mys">
+							<option value="">Variable to Size by</option>
+						</select>
+						<div id="jitterBox">
+							<label class="checkbox-inline"><input type="checkbox" value="False" id="jitterX">Jitter data points (X)</label><br>
+							<label class="checkbox-inline"><input type="checkbox" value="False" id="jitterY">Jitter data points (Y)</label>
+						</div>
+						<div class="myButtons" style="padding-top: 25px">
+							<button type="button" class="btn btn-default btn-block" id="outliersBtn">Drop Outliers</button>
+						</div>
+						<div class="myButtons" style="padding-top: 25px">
+							<button type="button" class="btn btn-default btn-block" id="categorizeBtn">Categorize</button>
+						</div>
+						
+						<!--
+						<div class="myButtons" style="padding-top: 25px" style="background-color: red;">
+							<button type="button" class="btn btn-default btn-block" id="dropColBtn">Drop Column</button>
+						</div>
+						-->
+					</div>
+					<div class="form-group col-sm-9" id="dashboards">
+						<div class="container-fluid">
+							<div class="form-group col-sm-3" id="buttons">
+								<div class="myButtons" style="padding-top: 25px">
+									<button type="button" class="btn btn-default btn-block" id="plotBtn" onclick="updateCharts()">Plot</button>
+								</div>
+								<div class="myButtons" style="padding-top: 25px">
+									<button type="button" class="btn btn-default btn-block" id="exportBtn">Export</button>
+								</div>
+
+							</div>
+					      	<div class="form-group col-sm-9">
+					      			<label for="comment">Notes:</label>
+				  					<textarea class="form-control" rows="5" id="note" style="height: 100px">Take notes here</textarea>
+					      	</div>
+				      	</div>
+				      	<hr>
+			      		<div class="container-fluid" id="chartArea">
+			      			<div id="chart"><svg></svg></div>
+			      			
+			      		</div>
+				    </div>
+				    
+		      	</div>
+	      		
+	      		<!--
+	      		<div style="height: 10px"></div>
+	      		-->
+			</div>
+
+			<!--
+			<div class="col-sm-1 nav sidenav"></div>
+			-->
+
+
+	  </div>
+	</div>
+
+	
+	<footer class="container-fluid text-center">
+	  <p>XYZ Inc. Churn Project</p>
+	  <p>contact: cgira@brandeis.edu</p>
+	</footer>
+	
+	<script type="text/javascript">
+		//initiate variable to hold labels
+		var labels_init = [""];
+		/*===Upload the csv===*/
+		$(document).ready(function() {
+
+		    // The event listener for the file upload
+		    document.getElementById('txtFileUpload').addEventListener('change', upload, false);
+
+		    // Method that checks that the browser supports the HTML5 File API
+		    function browserSupportFileUpload() {
+		        var isCompatible = false;
+		        if (window.File && window.FileReader && window.FileList && window.Blob) {
+		        isCompatible = true;
+		        }
+		        return isCompatible;
+		    }
+
+		    // Method that reads and processes the selected file
+		    function upload(evt) {
+		    if (!browserSupportFileUpload()) {
+		        alert('The File APIs are not fully supported in this browser!');
+		        } else {
+		            var data = null;
+		            var file = evt.target.files[0];
+		            var reader = new FileReader();
+		            reader.readAsText(file);
+		            reader.onload = function(event) {
+		                var csvData = event.target.result;
+		                data = $.csv.toArrays(csvData);
+		                if (data && data.length > 0) {
+		                  //alert('Imported -' + data.length + '- rows successfully!');
+		                  
+		                  //populate drop down lists
+		                  assign_labels(labels_init.concat(data[0].sort()));
+		                  var filename = document.getElementById("txtFileUpload").value
+		                  $.getJSON('/dataset',{variables:filename},function(data){
+		                  		alert(data.alert);
+							});
+		                  //send data to backend
+
+		                } else {
+		                    alert('No data to import!');
+		                }
+		            };
+		        reader.onerror = function() {
+		            alert('Unable to read ' + file.fileName);
+		            };
+		        }
+		    }
+		});
+		/*===attach labels to all dropdown lists===*/
+		//var labels_init={{ labels|tojson }};
+		//assign_labels(labels_init);
+		function assign_labels(labels){
+			//alert(labels);
+
+			var myxs = document.getElementById('myx').disabled
+			var myys = document.getElementById('myy').disabled
+			var mycs = document.getElementById('myc').disabled
+			var myss = document.getElementById('mys').disabled
+
+			var myxv = document.getElementById('myx').value
+			var myyv = document.getElementById('myy').value
+			var mycv = document.getElementById('myc').value
+			var mysv = document.getElementById('mys').value
+			
+			d3.selectAll("#myx").selectAll("option").data(labels).enter().append("option").text(function(d){ return d; })
+			d3.selectAll("#myy").selectAll("option").data(labels).enter().append("option").text(function(d){ return d; })
+			d3.selectAll("#myc").selectAll("option").data(labels).enter().append("option").text(function(d){ return d; })
+			d3.selectAll("#mys").selectAll("option").data(labels).enter().append("option").text(function(d){ return d; })
+
+			document.getElementById('myx').disabled = myxs
+			document.getElementById('myy').disabled = myys
+			document.getElementById('myc').disabled = mycs
+			document.getElementById('mys').disabled = myss
+
+			document.getElementById('myx').value = myxv
+			document.getElementById('myy').value = myyv
+			document.getElementById('myc').value = mycv
+			document.getElementById('mys').value = mysv
+		}
+			
+
+		/*The following function send command to backend to drop outliers*/
+		d3.select("#outliersBtn").on("click",function(){
+			var xlabel = document.getElementById('myx').value;
+			$.getJSON('/outliers',{variables:xlabel},function(data){
+				assign_labels(data.labels);
+				alert(data.alert);
+				
+			});
+		});
+
+		/*The following function send command to categorize selected feature*/
+		d3.select("#categorizeBtn").on("click",function(){
+			var xlabel = document.getElementById('myx').value;
+			$.getJSON('/categories',{variables:xlabel},function(data){
+				assign_labels(data.labels);
+				alert(data.alert);
+			});
+		});
+
+
+		
+		d3.select("#charttype").on("click",activate_lists);
+		//d3.select("#myx").on("click",activate_lists);
+		//d3.select("#myy").on("click",activate_lists);
+		//d3.select("#myc").on("click",activate_lists);
+
+		function activate_lists(){
+			if(this.value=="BarPlot"){
+				document.getElementById('myy').disabled = true;
+				document.getElementById('myy').value = "";
+			}
+			else{
+				document.getElementById('myy').disabled = false;
+				document.getElementById('myy').value = "Default";
+			}
+
+			if(this.value=="BoxPlot"){
+				document.getElementById('myc').disabled = true;
+				document.getElementById('myc').value = "";
+			}
+			else{
+				document.getElementById('myc').disabled = false;
+				document.getElementById('myc').value = "Default";
+			}
+
+			if(this.value=="scatterPlot"){
+				document.getElementById('jitterBox').hidden = true;
+			}else{
+				document.getElementById('jitterBox').hidden = false;
+			}
+		}
+
+		//function to generate plots
+		function updateCharts() {
+			//get axis labels
+			var xlabel = document.getElementById('myx').value;
+			var ylabel = document.getElementById('myy').value;
+			var clabel = document.getElementById('myc').value;
+			var slabel = document.getElementById('mys').value;
+			var charttype = document.getElementById('charttype').value;
+			var yJitter = document.getElementById("jitterY").checked;
+			var xJitter = document.getElementById("jitterX").checked;
+
+			//var slabel = document.getElementById('myc').value;
+			if(xlabel=='Default'){
+					alert("Choose a variable for X-Axis!");
+					return;
+			}
+			if(ylabel=='Default'){
+					alert("Choose a variable for Y-Axis!");
+					return;
+				}
+			//if(clabel=='Default'){
+			//		alert("Choose a variable to set color!");
+			//		return;
+			//	}
+			if(charttype=='Default'){
+					alert("Choose a chart type!");
+					return;
+				}
+
+			d3.selectAll("svg").remove();
+			var variables_out = xlabel+'__'+ylabel+'__'+clabel+'__'+slabel+'__'+charttype+'_x_'+xJitter+'__'+yJitter
+
+			$.getJSON('/data',{variables:variables_out},
+				function(data){
+					dataset = data.dataset;
+					labels = [xlabel,ylabel,clabel,slabel,charttype];
+
+
+					if(charttype=='ScatterPlot'){
+						plotScatter(dataset,labels);
+					};
+					if(charttype=='BarPlot'){
+						plotBar(dataset,labels);
+					};
+					if(charttype=='BoxPlot'){
+						plotBox(dataset,labels);
+					};
+
+				});
+		}
+
+		/*The following block implements the function for bar plot*/
+		/*Note that this to be used when comparing two categorical variables*/
+		/*This could be replaced by treemap in case one of the categorical is binary*/
+		function plotBar(dataset,labels){
+			
+			var series = dataset.series;
+			var data = dataset.data.map(function(data,i){
+				return {
+					key: labels[2]+":  "+series[i],
+					values: data
+				};
+			})
+			
+			//alert(data);
+			var svg = d3.select("#chart").append("svg").style("height",parseInt(d3.select("#chart").style("width"),10)*9/16);
+			nv.addGraph(function(){
+				var chart = nv.models.multiBarChart()
+									.stackOffset('expand')
+									.color(d3.scale.category10().range());
+
+				chart.xAxis.axisLabel(labels[0]).tickFormat(d3.format('.1f'));
+				chart.yAxis.axisLabel("Count").tickFormat(d3.format('.1f'));
+				//chart.yScale(d3.scale.log());
+				d3.select("#chart svg")
+					.datum(data)
+					.transition().duration(500)
+					.call(chart);
+				nv.utils.windowResize(chart.update);
+
+				return chart;
+			})
+		};
+
+		/*The following is for plotting a boxplot*/
+		/*To be use in visualizing*/
+		function plotBox(dataset,labels){
+			var series = dataset.series;
+			var data = dataset.data.map(function(data,i){
+				return {
+					label: labels[0]+": "+series[i],
+					values: data
+				};
+			});
+			var svg = d3.select("#chart").append("svg").style("height",parseInt(d3.select("#chart").style("width"),10)*9/16);
+			nv.addGraph(function() {
+				var chart = nv.models.boxPlotChart()
+								.x(function(d) { return d.label})
+								.staggerLabels(true)
+								.maxBoxWidth(75)
+								.color(d3.scale.category10().range());
+								//.yDomain([0,500]);
+				chart.yAxis.axisLabel(labels[1]).tickFormat(d3.format('.1f'));
+				chart.xAxis.axisLabel('')//.tickFormat(d3.format('.1f'));
+				d3.select("#chart svg")
+					.datum(data)
+					.call(chart);
+
+				nv.utils.windowResize(chart.update);
+				return chart;
+			});
+		};
+
+		/*The following block implements the function for scatter plots*/
+		function plotScatter(dataset,labels){
+			var series = dataset.series;
+			var data = dataset.data.map(function(data,i){
+				return {
+					key: labels[2]+": "+series[i],
+					values: data//.forEach(function(d){return {x:d.x,y:d.y,size:50}})
+				};
+			});
+			//alert(data);
+			var svg = d3.select("#chart").append("svg").style("height",parseInt(d3.select("#chart").style("width"),10)*9/16);
+			nv.addGraph(function(){
+				var chart = nv.models.scatterChart()
+									.showDistY(true)
+									.showDistX(true)
+									.useVoronoi(true)
+									.color(d3.scale.category10().range());
+				chart.xAxis.axisLabel(labels[0]).tickFormat(d3.format('.1f'));
+				chart.yAxis.axisLabel(labels[1]).tickFormat(d3.format('.1f'));
+				d3.select("#chart svg")
+					.datum(data)
+					.transition().duration(500)
+					.call(chart);
+				nv.utils.windowResize(chart.update);
+				//d3_save_svg.embedRasterImages(svg.node());
+
+				return chart;
+			})
+		};
+		
+		
+	    d3.select('#exportBtn').on('click', function() {
+	    	var html = d3.select("svg")
+					        .attr("title", "test2")
+					        .attr("version", 1.1)
+					        .attr("xmlns", "http://www.w3.org/2000/svg")
+					        .node().parentNode.innerHTML;
+
+			link = "data:image/svg+xml;base64," + btoa(html);
+
+	      var config = {
+	        filename: 'testsvg.png',
+	      }
+	      //d3_save_svg.save(d3.select('svg').node(), config);
+	      ipopup = window.open(link);
+	      ipopup.focus();
+	      ipopup.print();
+
+	      tpopup = window.open("");
+	      tpopup.document.body.innerText = $("#note").val();
+	      ipopup.focus();
+	      ipopup.print();
+	    });
+	    
+		
+
+	</script>
+</body>
+</html>

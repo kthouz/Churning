@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<!DOCTYPE html>
+<html>
+<head>
+	<title>QWE Churn Project</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel=stylesheet type=text/css href="{{ url_for('static', filename='css/style.css') }}">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+  	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  	<script type="text/javascript" src="https://d3js.org/d3.v4.min.js"></script>
+  	<script type="text/javascript" src="https://d3js.org/d3.v3.min.js"></script>
+</head>
+<body>
+	<nav class="navbar navbar-default">
+	  
+	</nav>
+  
+	<div class="container-fluid text-center">    
+	  <div class="row content">
+		    <div class="col-sm-2 nav navbar-btn sidenav text-right">
+		    	<ul class="nav navbar-btn">
+	      			<li class="active"><a href="#">Data Explorer</a></li>
+			        <li><a href="#">Predictor</a></li>
+			      	<li><a href="#">Recommendations</a></li>
+	    		</ul>
+		    	
+		    </div>
+
+	      	<div class="col-sm-9 text-left container-fluid">
+	      		<h4>Data Exploration</h4>
+	      		<hr>
+		      	<div class="container-fluid control-panel">
+				    <div class="form-group col-sm-4">
+						<label>X Axis *</label>
+						<select class="form-control" id="myx">
+							<option value="Default">Variable on X-Axis</option>
+						</select>
+						<label>Y Axis *</label>
+						<select class="form-control" id="myy">
+							<option value="Default">Variable on Y-Axis</option>
+						</select>
+						<label>Color By</label>
+						<select class="form-control" id="myc">
+							<option value="Default">Variable to Color by</option>
+						</select>
+						<label>Size By</label>
+						<select class="form-control" id="mys">
+							<option value="Default">Variable to Size by</option>
+						</select>
+						<label>Chart Type</label>
+						<select class="form-control" id="charttype">
+							<option value="ScatterPlot">Change Chart Type</option>
+							<option value="ScatterPlot">Scatter Plot</option>
+							<option value="BarPlot">Bar Plot</option>
+							<option value="BoxPlot">Box Plot</option>
+						</select>
+					</div>
+					<div class="form-group col-sm-2" id="buttons">
+						<div class="myButtons" style="padding-top: 25px">
+							<button type="button" class="btn btn-default btn-block" id="plotBtn" onclick="updateCharts()">Plot</button>
+						</div>
+						<div class="myButtons" style="padding-top: 25px">
+							<button type="button" class="btn btn-default btn-block" id="export">Export</button>
+						</div>
+
+					</div>
+			      	<div class="form-group col-sm-6">
+			      			<label for="comment">Notes:</label>
+		  					<textarea class="form-control" rows="5" id="note" style="height: 200px">Take notes here</textarea>
+			      	</div>
+		      	</div>
+	      		<hr>
+	      		<div class="container-fluid" id="chartArea">
+	      			<div id="chart"></div>
+	      		</div>
+	      		
+	      		<div style="height: 10px"></div>
+			</div>
+
+
+			<div class="col-sm-1 nav sidenav"></div>
+
+
+	  </div>
+	</div>
+	<!--
+	<footer class="container-fluid text-center">
+	  <p>XYZ Inc. Churn Project</p>
+	  <p>contact: cgira@brandeis.edu</p>
+	</footer>
+	-->
+	<script type="text/javascript">
+		//attach labels to all dropdown lists
+		var labels={{ labels|tojson }};
+
+		d3.selectAll("#myx").selectAll("option").data(labels).enter().append("option").text(function(d){ return d; })
+		d3.selectAll("#myy").selectAll("option").data(labels).enter().append("option").text(function(d){ return d; })
+		d3.selectAll("#myc").selectAll("option").data(labels).enter().append("option").text(function(d){ return d; })
+		//d3.selectAll("#mys").selectAll("option").data(labels).enter().append("option").text(function(d){ return d; })
+
+		//function to generate plots
+		function updateCharts() {
+			//get axis labels
+			var xlabel = document.getElementById('myx').value;
+			var ylabel = document.getElementById('myy').value;
+			var clabel = document.getElementById('myc').value;
+			//var slabel = document.getElementById('myc').value;
+			if(xlabel=='Default'){
+					alert("Choose a variable for X-Axis!");
+					return;
+			}
+			if(ylabel=='Default'){
+					alert("Choose a variable for Y-Axis!");
+					return;
+				}
+			//if(clabel=='Default'){
+			//		alert("Choose a variable to set color!");
+			//		return;
+			//	}
+
+			d3.selectAll("svg").remove();
+			$.getJSON('/data',{variables:xlabel+'__'+ylabel+'__'+clabel},
+				function(data){
+					dataset = data.dataset;
+					labels = [xlabel,ylabel,clabel]
+					plotScatter(dataset,labels);
+					//plotBar();
+					//plotBox();
+				});
+		}
+		/*The following block implements the function for bar plot*/
+		function plotBar(data,labels){
+
+		}
+
+
+
+
+
+		/*The following block implements the function for scatter plots*/
+		function plotScatter(data,labels){
+			xlabel = labels[0];
+			ylabel = labels[1];
+			clabel = labels[2];
+			var margin = {top: 20, right: 20, bottom: 40, left: 50};
+				w0 = parseInt(d3.select("#chart").style("width"),10);
+			    width = w0 - (margin.left + margin.right);
+				height = w0 * 9 / 16 - (margin.top + margin.bottom);
+
+			var x = d3.scale.linear().range([0, width]);
+			var y = d3.scale.linear().range([height, 0]);
+			var color = d3.scale.category10();
+
+			var xAxis = d3.svg.axis().scale(x).orient("bottom");
+			var yAxis = d3.svg.axis().scale(y).orient("left");
+
+			var svg = d3.select("#chart").append("svg")
+						.attr("width", width + margin.left + margin.right)
+						.attr("height", height + margin.top + margin.bottom)
+					.append("g")
+						.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+			data.forEach(function(d) { d[0] = +d[0]; d[1] = +d[1]; d[2] = +d[2]; });
+
+  			x.domain([d3.min(data, function(d) { return d[0]; })-2, d3.max(data, function(d) { return d[0]; })+2]);
+  			y.domain([d3.min(data, function(d) { return d[1]; })-2, d3.max(data, function(d) { return d[1]; })+2]);
+  			svg.append("g").attr("class", "x axis").attr("transform", "translate(0," + height + ")").call(xAxis)
+			   .append("text").attr("class", "label").attr("x", width).attr("y", -6)
+			   .style("text-anchor", "end").style("font-size",12)
+			   .text(labels[0]);
+
+			svg.append("g").attr("class", "y axis").call(yAxis)
+			   .append("text").attr("class", "label").attr("transform", "rotate(-90)").attr("y", 6).attr("dy", ".71em")
+			   .style("text-anchor", "end").style("font-size",12)
+			   .text(labels[1]);
+
+			svg.selectAll(".dot").data(data).enter()
+					.append("circle").attr("class", "dot").attr("r", 6).attr("cx", function(d) { return x(d[0]); })
+					.attr("cy", function(d) { return y(d[1]); })
+					.style("fill", function(d) { return color(d[2]); })
+					.style("opacity",0.8);
+			
+			var legend = svg.selectAll(".legend").data(color.domain()).enter()
+					.append("g").attr("class", "legend").attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
+			legend.append("rect").attr("x", width - 40).attr("width", 35).attr("height", 18).style("fill", color);
+			legend.append("text").attr("x", width - 46).attr("y", 9).attr("dy", ".35em").style("text-anchor", "end")
+			      .text(function(d) { return clabel+' '+d; });
+
+			//alert([data,labels,data.length,svg]);
+			
+		}
+		//function to generate barplot
+		//function to generate boxplot
+		//function to generate treemap
+
+	</script>
+</body>
+</html>

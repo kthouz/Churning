@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<!DOCTYPE html>
+<html>
+<head>
+	<title>QWE Churn Project</title>
+	<meta charset="utf-8">
+  	<meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel=stylesheet type=text/css href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdn.rawgit.com/kthouz/nvd3/v1.8.1/build/nv.d3.css">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+  	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  	<script type="text/javascript" src="https://d3js.org/d3.v3.min.js"></script>
+    <script type="text/javascript" src="https://cdn.rawgit.com/kthouz/nvd3/v1.8.1/build/nv.d3.min.js"></script>
+    <script type="text/javascript" src="https://raw.githubusercontent.com/kthouz/nvd3/master/examples/lib/stream_layers.js"></script>
+    <script src="https://cdn.jsdelivr.net/jspdf/1.2.61/jspdf.min.js"></script>
+
+</head>
+<body>
+	<!--
+	<nav class="navbar navbar-default">
+	  
+	</nav>
+	-->
+  
+	<div class="container-fluid text-center">    
+	  <div class="row content">
+		    <div class="col-sm-2 nav navbar-btn sidenav text-right">
+		    	<ul class="nav navbar-btn">
+	      			<li class="active"><a href="#">Data Explorer</a></li>
+			        <li><a href="#">Predictor</a></li>
+			      	<li><a href="#">Recommendations</a></li>
+	    		</ul>
+		    	
+		    </div>
+
+	      	<div class="col-sm-9 text-left container-fluid">
+	      		<h4>Data Exploration</h4>
+	      		<hr>
+		      	<div class="container-fluid control-panel">
+				    <div class="form-group col-sm-4">
+				    	<label>Chart Type *</label>
+						<select class="form-control" id="charttype">
+							<option value="Default">Pick Chart Type</option>
+							<option value="ScatterPlot">Scatter Plot</option>
+							<option value="BarPlot">Bar Plot</option>
+							<option value="BoxPlot">Box Plot</option>
+						</select>
+						<label>X Axis *</label>
+						<select class="form-control" id="myx">
+							<option value="Default">Variable on X-Axis</option>
+						</select>
+						<label>Y Axis *</label>
+						<select class="form-control" id="myy">
+							<option value="Default">Variable on Y-Axis</option>
+						</select>
+						<label>Color By</label>
+						<select class="form-control" id="myc">
+							<option value="Default">Variable to Color by</option>
+						</select>
+						<label>Size By</label>
+						<select disabled class="form-control" id="mys">
+							<option value="">Variable to Size by</option>
+						</select>
+					</div>
+					<div class="form-group col-sm-2" id="buttons">
+						<div class="myButtons" style="padding-top: 25px">
+							<button type="button" class="btn btn-default btn-block" id="plotBtn" onclick="updateCharts()">Plot</button>
+						</div>
+						<div class="myButtons" style="padding-top: 25px">
+							<button type="button" class="btn btn-default btn-block" id="exportBtn">Export</button>
+						</div>
+
+					</div>
+			      	<div class="form-group col-sm-6">
+			      			<label for="comment">Notes:</label>
+		  					<textarea class="form-control" rows="5" id="note" style="height: 100px">Take notes here</textarea>
+			      	</div>
+		      	</div>
+	      		<hr>
+	      		<div class="container-fluid" id="chartArea">
+	      			<div id="chart"><svg></svg></div>
+	      		</div>
+	      		
+	      		<div style="height: 10px"></div>
+			</div>
+
+
+			<div class="col-sm-1 nav sidenav"></div>
+
+
+	  </div>
+	</div>
+	<!--
+	<footer class="container-fluid text-center">
+	  <p>XYZ Inc. Churn Project</p>
+	  <p>contact: cgira@brandeis.edu</p>
+	</footer>
+	-->
+	<script type="text/javascript">
+		//attach labels to all dropdown lists
+		var labels={{ labels|tojson }};
+
+		d3.selectAll("#myx").selectAll("option").data(labels).enter().append("option").text(function(d){ return d; })
+		d3.selectAll("#myy").selectAll("option").data(labels).enter().append("option").text(function(d){ return d; })
+		d3.selectAll("#myc").selectAll("option").data(labels).enter().append("option").text(function(d){ return d; })
+		d3.selectAll("#mys").selectAll("option").data(labels).enter().append("option").text(function(d){ return d; })
+		
+		d3.select("#charttype").on("click",function(){
+			if(this.value=="BarPlot"){
+				document.getElementById('myy').disabled = true;
+				document.getElementById('myy').value = "";
+			}
+			else{
+				document.getElementById('myy').disabled = false;
+				document.getElementById('myy').value = "Default";
+			}
+
+			if(this.value=="BoxPlot"){
+				document.getElementById('myc').disabled = true;
+				document.getElementById('myc').value = "";
+			}
+			else{
+				document.getElementById('myc').disabled = false;
+				document.getElementById('myc').value = "Default";
+			}
+		})
+
+		//function to generate plots
+		function updateCharts() {
+			//get axis labels
+			var xlabel = document.getElementById('myx').value;
+			var ylabel = document.getElementById('myy').value;
+			var clabel = document.getElementById('myc').value;
+			var slabel = document.getElementById('mys').value;
+			var charttype = document.getElementById('charttype').value;
+			//var slabel = document.getElementById('myc').value;
+			if(xlabel=='Default'){
+					alert("Choose a variable for X-Axis!");
+					return;
+			}
+			if(ylabel=='Default'){
+					alert("Choose a variable for Y-Axis!");
+					return;
+				}
+			//if(clabel=='Default'){
+			//		alert("Choose a variable to set color!");
+			//		return;
+			//	}
+			if(charttype=='Default'){
+					alert("Choose a chart type!");
+					return;
+				}
+
+			d3.selectAll("svg").remove();
+			$.getJSON('/data',{variables:xlabel+'__'+ylabel+'__'+clabel+'__'+slabel+'__'+charttype},
+				function(data){
+					dataset = data.dataset;
+					labels = [xlabel,ylabel,clabel,slabel,charttype];
+
+
+					if(charttype=='ScatterPlot'){
+						plotScatter(dataset,labels);
+					};
+					if(charttype=='BarPlot'){
+						plotBar(dataset,labels);
+					};
+					if(charttype=='BoxPlot'){
+						plotBox(dataset,labels);
+					};
+
+				});
+		}
+		/*The following block implements the function for bar plot*/
+		/*Note that this to be used when comparing two categorical variables*/
+		/*This could be replaced by treemap in case one of the categorical is binary*/
+		function plotBar(dataset,labels){
+			
+			var series = dataset.series;
+			var data = dataset.data.map(function(data,i){
+				return {
+					key: labels[2]+":  "+series[i],
+					values: data
+				};
+			})
+			
+			//alert(data);
+			var svg = d3.select("#chart").append("svg").style("height",parseInt(d3.select("#chart").style("width"),10)*9/16);
+			nv.addGraph(function(){
+				var chart = nv.models.multiBarChart()
+									.stackOffset('expand')
+									.color(d3.scale.category10().range());
+
+				chart.xAxis.axisLabel(labels[0]).tickFormat(d3.format('.1f'));
+				chart.yAxis.axisLabel("Count").tickFormat(d3.format('.1f'));
+				d3.select("#chart svg")
+					.datum(data)
+					.transition().duration(500)
+					.call(chart);
+				nv.utils.windowResize(chart.update);
+				return chart;
+			})
+		};
+		/*The following is for plotting a boxplot*/
+		/*To be use in visualizing*/
+		function plotBox(dataset,labels){
+			var series = dataset.series;
+			var data = dataset.data.map(function(data,i){
+				return {
+					label: labels[0]+": "+series[i],
+					values: data
+				};
+			});
+			var svg = d3.select("#chart").append("svg").style("height",parseInt(d3.select("#chart").style("width"),10)*9/16);
+			nv.addGraph(function() {
+				var chart = nv.models.boxPlotChart()
+								.x(function(d) { return d.label})
+								.staggerLabels(true)
+								.maxBoxWidth(75)
+								.color(d3.scale.category10().range());
+								//.yDomain([0,500]);
+				chart.yAxis.axisLabel(labels[1]).tickFormat(d3.format('.1f'));
+				d3.select("#chart svg")
+					.datum(data)
+					.call(chart);
+
+				nv.utils.windowResize(chart.update);
+				return chart;
+			});
+		};
+
+
+		/*The following block implements the function for scatter plots*/
+		function plotScatter(dataset,labels){
+			var series = dataset.series;
+			var data = dataset.data.map(function(data,i){
+				return {
+					key: labels[2]+": "+series[i],
+					values: data
+				};
+			});
+			//alert(data);
+			var svg = d3.select("#chart").append("svg").style("height",parseInt(d3.select("#chart").style("width"),10)*9/16);
+			nv.addGraph(function(){
+				var chart = nv.models.scatterChart()
+									.showDistY(true)
+									.showDistX(true)
+									.useVoronoi(true)
+									.color(d3.scale.category10().range());
+				chart.xAxis.axisLabel(labels[0]).tickFormat(d3.format('.1f'));
+				chart.yAxis.axisLabel(labels[1]).tickFormat(d3.format('.1f'));
+				d3.select("#chart svg")
+					.datum(data)
+					.transition().duration(500)
+					.call(chart);
+				nv.utils.windowResize(chart.update);
+				return chart;
+			})
+		};
+		
+		/*function to export svg as pdf*/
+		$("#exportBtn").click(function(){
+			//var pdf = new jsPDF();
+			//pdf.text(20,20,$("#note").val());
+			//pdf.save("note.pdf");
+
+			  var text1 = $("#chart")[0].outerHTML;
+			  var text2 = $("#note")[0].outerHTML;
+			  //var styles = $("style")[0].outerHTML;
+			  var popup = window.open("", "popup");
+			  popup.document.body.innerHTML = text1 + text2; //+ styles;
+			  popup.focus();
+			  popup.print();
+
+			//alert("saved as note.pdf");
+		})
+
+	</script>
+</body>
+</html>
