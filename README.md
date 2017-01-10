@@ -869,7 +869,7 @@ def x2(x1,r1):
 
 print "for x1=100 and r1=20, the retaintion incentive can be estimated to ",round(x2(100,20))
 ```
-```python
+```
 for x1=100 and r1=20, the retaintion incentive can be estimated to  54.0
 ```
 
