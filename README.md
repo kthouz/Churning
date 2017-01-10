@@ -5,9 +5,9 @@ This notebook is about building a model to predict churners at QWE INC.
 
 ### Contents
 
-0. The module. - all user-defined functions used in this notebook
-1. Data cleaning. - all process of data cleaning: renaming, outlier treatment
-2. Feature engineering. - 
+0. [The module] (#0.-The-module)
+1. Data cleaning
+2. Feature engineering
 3. Stratified sampling
 4. Exploratory data analysis
 5. Principle components analysis
@@ -15,6 +15,7 @@ This notebook is about building a model to predict churners at QWE INC.
 7. Recommendation
 8. Appendix
 
+# 0. The module
 ```python
 import pandas as pd
 import numpy as np
@@ -222,7 +223,27 @@ def biplot(score,coeff,pcax,pcay,labels=None,nm=None):
     plt.show()
     #pprint(vectors)
     return vectors
-
+def engineer_features(df):
+    """
+    this function engineer new features for the input dataset
+    """
+    
+    #Since happiness is something that is gained progressively with a customer age and satisfaction, 
+    #it is wise to have thise metric. We derive it as the ratio of Happiness Index - Current Month to Longevity.
+    df['Happiness Index - Monthly'] = df['Happiness Index - Current Month'] / df['Longevity - Months']
+    df['Happiness Index - Monthly'].fillna(df['Happiness Index - Monthly'].mean(),inplace=True)
+    
+    #Since the barplot of churners showed peaks at longevity 6,12,18 and 24, let's create new features
+    for n in [6,12,18,24]:
+        df['Longevity - Modulo '+str(n)] = df['Longevity - Months'].mod(n)
+        
+    df['Logins - Change'] = standardize(df['Logins - Change'].copy())
+    df['Blogs - Change'] = standardize(df['Blogs - Change'].copy())
+    df['Views - Change'] = standardize(df['Views - Change'].copy())
+    df['Customer Activity - Change'] = df[['Logins - Change','Blogs - Change','Views - Change']].mean(axis=1)
+    
+    return df
+    
 def modelfit(alg, xtr, ytr, performCV=True, printFeatureImportance=True, cv_folds=5,title=None):
     """
     This function perform cross validation (CV) of a model over a training dataset.
@@ -416,29 +437,6 @@ Let's now convert support priority variables that we didn't clean off outliers i
 
 # 2. Engineering new features
 
-
-```python
-def engineer_features(df):
-    """
-    this function engineer new features for the input dataset
-    """
-    
-    #Since happiness is something that is gained progressively with a customer age and satisfaction, 
-    #it is wise to have thise metric. We derive it as the ratio of Happiness Index - Current Month to Longevity.
-    df['Happiness Index - Monthly'] = df['Happiness Index - Current Month'] / df['Longevity - Months']
-    df['Happiness Index - Monthly'].fillna(df['Happiness Index - Monthly'].mean(),inplace=True)
-    
-    #Since the barplot of churners showed peaks at longevity 6,12,18 and 24, let's create new features
-    for n in [6,12,18,24]:
-        df['Longevity - Modulo '+str(n)] = df['Longevity - Months'].mod(n)
-        
-    df['Logins - Change'] = standardize(df['Logins - Change'].copy())
-    df['Blogs - Change'] = standardize(df['Blogs - Change'].copy())
-    df['Views - Change'] = standardize(df['Views - Change'].copy())
-    df['Customer Activity - Change'] = df[['Logins - Change','Blogs - Change','Views - Change']].mean(axis=1)
-    
-    return df
-```
 
 **New feature -> Happiness Index - Monthly** 
 
