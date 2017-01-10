@@ -850,19 +850,19 @@ We can now optimize potential losses due to false predictions.
 
 Loss due to false negative consists in the difference between the money collected from the customer and adoption expense
 
-$FN_{Loss}= 12.6*r_1 - x_1$
+FN{Loss}= 12.6*r1 - x1
 
 Loss due to false positive consists in the money invested in promotion per potential churner
 
-$FP_{Loss} = x_2$
+FP{Loss} = x2
 
 In order to decide which value to allocate on each potential churner, the company need to take into account the two potential losses above balanced with total loss of churners in case the model was absent.
 
-$64*(12.6*r_1 - x_1)+45*x_2 = 80*(12.6*r_1 - x_1)$
+64*(12.6*r1 - x1)+45*x2 = 80*(12.6*r1 - x1)
 
 And finally 
 
-$x_2 < (16/45)*(12.6*r_1 - x_1)$
+$x2 < (16/45)*(12.6*r1 - x1)$
 ```python
 def x2(x1,r1):
     return (12.6*r1 - x1)*16/float(45)
