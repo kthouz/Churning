@@ -3,12 +3,10 @@
 
 This notebook is about building a model to predict churners at QWE INC.
 
-## 1.1 Hello World
-[Link](#11-hello-world)
 
 ### Contents
 
-0. [The module] (#0.-The-module)
+0. [The module](#The-module)
 1. Data cleaning
 2. Feature engineering
 3. Stratified sampling
@@ -18,7 +16,7 @@ This notebook is about building a model to predict churners at QWE INC.
 7. Recommendation
 8. Appendix
 
-# 0. The module
+## The module
 ```python
 import pandas as pd
 import numpy as np
