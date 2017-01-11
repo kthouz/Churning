@@ -7,17 +7,17 @@ This notebook contains the analysis of data leading to the predictive model. The
 
 ### Contents
 
-0. The module
-1. Data cleaning
-2. Feature engineering
-3. Stratified sampling
-4. Exploratory data analysis
-5. Principle components analysis
-6. Modeling
-7. Recommendation
-8. Appendix
+1. The module
+2. Data cleaning
+3. Feature engineering
+4. Stratified sampling
+5. Exploratory data analysis
+6. Principle components analysis
+7. Modeling
+8. Recommendation
+9. Appendix
 
-# 0. The module
+# 1. The module
 
 ```python
 import pandas as pd
@@ -393,7 +393,7 @@ class StratSampler():
 		return sorted(positiveIds+negativeIds)
 ```
 
-# 1. Load and clean data
+# 2. Load and clean data
 
 In this section, we load the data. Next, we validate the dataset looking for missing values, invalid data types, ...
 
@@ -438,7 +438,7 @@ I consider an outlier to be any point located at 2.5 standard deviation far from
 Let's now convert support priority variables that we didn't clean off outliers into categorical. The initial visualization showed that about 90% of the data is zero. I opt to generate two categories 0 (zero support priority) and 1 (otherwise)
 
 
-# 2. Engineering new features
+# 3. Engineering new features
 
 
 **New feature -> Happiness Index - Monthly** 
@@ -463,7 +463,7 @@ The activity of customers is expressed with any of number of logins, number of b
 data = engineer_features(data)
 ```
 
-# 3. Stratified Sampling
+# 4. Stratified Sampling
 
 Before we move on with further analysis, let's split training and validation datasets. We shall also see that there is only 5% of positive churners. This is a case of unbalanced dataset. Therefore, we will use a stratified sampling to boost the positive rate to 20%
 
@@ -539,7 +539,7 @@ plt.show()
 <img src="data/output_15_0.png">
 
 
-# 4. Exploratory Data Analysis
+# 5. Exploratory Data Analysis
 
 In this section, we will visually explore the data. Each variable will be compared to the target variable. We will use statistical tests to find how averages of independent variables are different in the two groups of churners and non-churners at 95% level of confidence. t-test will be used for numerical continuous variable and chisquare will be used for categorical variables.
 
@@ -677,7 +677,7 @@ for col in ['Support Priority - Change','Support Priority - Current Month']:
     Support Priority - Current Month : Power_divergenceResult(statistic=1.026811915361854, pvalue=0.31090863503659427)
 
 
-# 5. Principle Components Analysis
+# 6. Principle Components Analysis
 
 
 If X is the dataset, we use PCA to learn coeffients (also known as loadings) **$L$** and a set of components **$C$** such that **$X = L \cdotp C$**. We will use PCA package available in scikit learn. We start by fitting the entire dataset to extract the number of useful components. Then the data is fitted again using the extracted number of important features.
@@ -714,12 +714,12 @@ labels_pca = map(lambda x:x[0],vects)
 <img src="data/output_36_2.png">
 
 
-# 6. Modeling
+# 7. Modeling
 
 This is a classification problem with positive cases being churners. Throught data exploration, we found variables such as longevity and happiness index that can be used to separate churners from non-churners. In this section, we will choose the registic regression as base model and we will tune the regularization factor to build our own predictive model
 
 
-## 6.1. Training the model
+## 7.1. Training the model
 
 After observing so many variables whose averages are significantly different in the two groups of churners and non-churners, logistic regression would serve as a good candidate for model training.
 
@@ -806,7 +806,7 @@ lrf = modelfit(LogisticRegression(C=c),sample[labels_pca],sample[target],printFe
     CV Score: Mean = 0.6432 | Std = 0.1122 | Min = 0.4376 | Max = 0.7663
 
 
-## 6.2. Model Valuation
+## 7.2. Model Valuation
 
 
 ```python
@@ -837,7 +837,7 @@ with open("model.pkl","wb") as mdl:
     mdl.close()
 ```
 
-# 7. Recommendations
+# 8. Recommendations
 
 ### How can the company allocate funds to retain potential churners?
 
@@ -884,7 +884,7 @@ Based on our exploratory and statistical analysis we suggest the company prepare
 
 To improve the model, more data should be provided. Churning problem is a case of unbalanced dataset where resampling is used to boost the positive rate. For a better accuracy, it is advised to have larger datasets
 
-# 8. Appendix
+# 9. Appendix
 
 #### Function to make predictions
 
