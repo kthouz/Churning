@@ -1,0 +1,13 @@
+name: churn
+dependencies:
+- python=2.7
+- pip
+- pip:
+  - tabulate==0.8.2
+  - flask==0.12.2
+  - pandas==0.20.3
+  - numpy==1.13.1
+  - scikit-image==0.13.0
+  - scikit-learn==0.19.0
+  - scipy==0.19.1
+  - seaborn==0.8

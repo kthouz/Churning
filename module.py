@@ -35,10 +35,10 @@ class StratSampler():
 		ncustomers = nchurners+len(self.neg)
 		ncneeded = (100/self.posRate - 1)*nchurners
 		self.ntotal = ncneeded+nchurners
-		print "total number of customers:", ncustomers
-		print "number of actual churners:", nchurners
-		print "total number of non-churners needed to obtain {0}% of churners: {1}".format(self.posRate,ncneeded)
-		print "the new sample will be made of {0}. That is {1}% of initial dataset".format(self.ntotal,100*self.ntotal/ncustomers)
+		print("total number of customers:", ncustomers)
+		print("number of actual churners:", nchurners)
+		print("total number of non-churners needed to obtain {0}% of churners: {1}".format(self.posRate,ncneeded))
+		print("the new sample will be made of {0}. That is {1}% of initial dataset".format(self.ntotal,100*self.ntotal/ncustomers))
 		for i in range(100): #randomly reshafle the list of indices
 			shuffle(self.pos)
 			shuffle(self.neg)
@@ -63,7 +63,7 @@ class StratSampler():
 		positiveIds = []
 		negativeIds = []
 		i = 0
-		print "==> resampling ...  ",
+		print("==> resampling ...  ",)
 		while len(positiveIds)+len(negativeIds)<self.ntotal:
 			# start a loop from 0 to total size of the new sampe
 			# if it catches a number divisable by the sought ratio, update the list of positive cases ids
@@ -74,13 +74,13 @@ class StratSampler():
 				else:
 					negativeIds.append(self.negId.next())
 			except:
-				print "Enter posRate higher than the initial rate"
+				print("Enter posRate higher than the initial rate")
 				break
 			i+=1
-		print "Done sampling"
-		print "positive:", len(positiveIds)
-		print "negative:", len(negativeIds)
-		print "final size:", len(positiveIds)+len(negativeIds)
+		print("Done sampling")
+		print("positive:", len(positiveIds))
+		print("negative:", len(negativeIds))
+		print("final size:", len(positiveIds)+len(negativeIds))
 		#return sorted list of the two list of ids combined
 		return sorted(positiveIds+negativeIds)
 
@@ -125,7 +125,7 @@ def drop_outliers(ps, method=1,center="mean",variable=None):
 	if method == 1:
 		IQR = Q3 - Q1
 		if IQR == 0:
-			print "IQR == 0. ",variable, "needs a closer look"
+			print("IQR == 0. ",variable, "needs a closer look")
 			return ps
 		else:
 			ix = ps[(ps < (Q1 - 1.5 * IQR)) | (ps > (Q3 + 1.5 * IQR))].index.tolist()
@@ -140,10 +140,10 @@ def drop_outliers(ps, method=1,center="mean",variable=None):
 			ps.loc[ix] = median
 			return ps
 		else:
-			print "unknonw center"
+			print("unknonw center")
 			return ps
 	else:
-		print "unknonw method"
+		print("unknonw method")
 		return ps
 
 def categorize_change(ps):
@@ -156,7 +156,7 @@ def categorize_change(ps):
 	ps[ps == 0] = 0
 	ps[ps < 0] = -1
 	ps[ps > 1] = 1
-	#print "variable transformed in categorical"
+	#print("variable transformed in categorical")
 	return ps
 
 def engineer_features(data,maxLong):
@@ -195,9 +195,9 @@ def describe_data(data):
 	summary = data.describe()
 	summary.loc['uniqueVals'] = data.apply(lambda x:x.unique().shape[0])
 	summary.drop(['25%','75%'],axis=0,inplace=True)
-	print "size: {0}".format(data.shape)
-	print "probability for churning: {0}%".format(100*data.Churn.sum()/data.shape[0])
-	print tabulate.tabulate(summary.T,tuple(summary.index.tolist()))
+	print("size: {0}".format(data.shape))
+	print("probability for churning: {0}%".format(100*data.Churn.sum()/data.shape[0]))
+	print(tabulate.tabulate(summary.T,tuple(summary.index.tolist())))
 	return summary.T
 
 def standardize_vars(df,new = True):
@@ -227,7 +227,7 @@ def test_stat(df,ivar,tvar,equal_var=True,ddof=0):
 	ivar_uniques = df[ivar].unique().shape[0]
 	tvar_uniques = df[tvar].unique().shape[0]
 	if tvar_uniques < 2:
-		print "Only one sample can be generated"
+		print ("Only one sample can be generated")
 		return None
 	if ivar_uniques <= 10: #This the case of a categorical independant variable. We use chisquare
 		ss = pd.crosstab(df[ivar],df[tvar])
@@ -281,7 +281,7 @@ def explore_continuous_var(ivar,tvar='Churn',df=None,
 
 	plt.show()
 	
-	print ivar,"t-test results:", ttest_ind(s0[ivar],s1[ivar],equal_var=ttestOpts['equal_var'])
+	print(ivar,"t-test results:", ttest_ind(s0[ivar],s1[ivar],equal_var=ttestOpts['equal_var']))
 
 def explore_categorical_var(ivar,tvar='Churn',df=None):
 	ctbl = pd.crosstab(df[ivar],df[tvar])
@@ -297,11 +297,11 @@ def explore_categorical_var(ivar,tvar='Churn',df=None):
 	plt.legend([0,1],title='Churn')
 	plt.show()
 	
-	print ivar, "chi square results:",chisquare(ctbl[0],ctbl[1])
+	print(ivar, "chi square results:",chisquare(ctbl[0],ctbl[1]))
 
 def evaluateModel(model,xtr,ytr,xva,yva,title,retrain=False):
-	print title
-	print "-------------------------------"
+	print(title)
+	print("-------------------------------")
 	
 	if retrain:
 		model.fit(xtr,ytr)
@@ -312,17 +312,17 @@ def evaluateModel(model,xtr,ytr,xva,yva,title,retrain=False):
 		'roc_score':[roc_auc_score(ytr,ycheck),roc_auc_score(yva,ypreds)],
 		'acc_score':[accuracy_score(ytr,ycheck),accuracy_score(yva,ypreds)]
 	}
-	print tabulate.tabulate(pd.DataFrame(scores.values(), columns=['train','valid'],
+	print(tabulate.tabulate(pd.DataFrame(scores.values(), columns=['train','valid'],
 										 index=scores.keys()).T,
-						   headers=scores.keys())
+						   headers=scores.keys()))
 	confusionM = {'train':confusion_matrix(ytr,ycheck), 'valid':confusion_matrix(yva,ypreds)}
 	#print "======================================="
 
 	return {'model':model,'scores':scores,'title':title,'confusionM':confusionM}
 
 def modelfit(alg, xtr, ytr, performCV=True, printFeatureImportance=True, cv_folds=5,title=None):
-	print title
-	print "-------------------------------"
+	print(title)
+	print("-------------------------------")
 	#Fit the algorithm on the data
 	alg.fit(xtr, ytr)
 		
@@ -334,14 +334,14 @@ def modelfit(alg, xtr, ytr, performCV=True, printFeatureImportance=True, cv_fold
 	if performCV:
 		cv_score = cross_val_score(alg, xtr, ytr, cv=cv_folds, scoring='roc_auc')
 	
-	#Print model report:
-	#print "\nModel Report"
-	print "Accuracy: %.4g" % accuracy_score(ytr.values, dtrain_predictions)
-	print "AUC Score (Train): %f" % roc_auc_score(ytr, dtrain_predprob)
+	#Print(model report:)
+	#print("\nModel Report")
+	print("Accuracy: %.4g" % accuracy_score(ytr.values, dtrain_predictions))
+	print("AUC Score (Train): %f" % roc_auc_score(ytr, dtrain_predprob))
 	
 	if performCV:
-		print "CV Score: Mean = %.4g | Std = %.4g | Min = %.4g | Max = %.4g" % \
-		(np.mean(cv_score),np.std(cv_score),np.min(cv_score),np.max(cv_score))
+		print("CV Score: Mean = %.4g | Std = %.4g | Min = %.4g | Max = %.4g" % \
+		(np.mean(cv_score),np.std(cv_score),np.min(cv_score),np.max(cv_score)))
 		
 	#Print Feature Importance:
 	if printFeatureImportance:

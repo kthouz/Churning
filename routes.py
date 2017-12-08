@@ -66,7 +66,7 @@ def box_data(sample,variables,jitters=[False,False]):
 	df = sample[r]
 	series = []
 	jdata = []
-	print type(df[r[0]]), r
+	print(type(df[r[0]]), r)
 	for val in sorted(df[r[0]].unique().tolist()):
 		series.append(round(val,2))
 		s = df[r[1]][df[r[0]] == val].describe().round(2).T
@@ -144,9 +144,9 @@ def data():
 	jitters = map(lambda j:bool((j=='true')*1),jitters.split('__'))
 
 	r = variables.split('__')
-	print "variables",variables, "jitters", jitters
+	print("variables",variables, "jitters", jitters)
 	sample = pd.read_csv(rootname)
-	print "sample reloaded"
+	print("sample reloaded")
 	if r[-1] == 'ScatterPlot':#prep data for scatter plot
 		data = scatter_data(sample,r,jitters)
 	elif r[-1] == 'BarPlot':
@@ -180,7 +180,7 @@ def outliers():
 	labels = ['']+map(lambda x:str(x),sample.columns)
 	alert = variable+': oultiers dropped! \n min: '+str(min1)+' -> '+str(min2)+ ' \n max: '+str(max1)+' -> '+str(max2)
 	alert +=' \nConsider plottin '+variable+'_Out'
-	print labels
+	print(labels)
 	return jsonify(alert=alert,labels=labels)
 
 @app.route('/categories')
@@ -189,14 +189,14 @@ def categories():
 	variable = request.args.get('variables',0,str)
 	sample = pd.read_csv(rootname)
 	if 'Change' in map(lambda x:x.strip(),variable.split('-')):
-		print "assertion"
+		print("assertion")
 		sample[variable+'_Cat'] = xyz.categorize_change(sample[variable].copy())
 		sample.to_csv(rootname,index=False)
 		sample = pd.read_csv(rootname)
 		labels = ['']+map(lambda x:str(x),sample.columns)
 		alert = variable+': converted in '+str(sample[variable+'_Cat'].unique().shape[0])+' categories: '
 		alert += str(sample[variable+'_Cat'].unique().tolist())+'\n. Replot '+variable+'_Cat'
-		print labels
+		print(labels)
 		return jsonify(label=variable,labels=labels,alert=alert)
 	else:
 		maj_cat = sample[variable].value_counts().index[0]
@@ -208,7 +208,7 @@ def categories():
 		labels = ['']+map(lambda x:str(x),sample.columns)
 		alert = variable+': converted in '+str(sample[variable+'_Cat'].unique().shape[0])+' categories: '
 		alert += str(sample[variable+'_Cat'].unique().tolist())+'\n. Replot '+variable+'_Cat'
-		print labels
+		print(labels)
 		return jsonify(label=variable,labels=labels,alert=alert)
 
 @app.route('/drop_column')
